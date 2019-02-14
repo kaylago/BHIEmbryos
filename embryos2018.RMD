@@ -1,0 +1,462 @@
+---
+title: "Embryos"
+author: "KG"
+date: "January 3, 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+setwd("C:/Users/kkmgo/Dropbox/BHI_Embryos_2018/Completed_Photo_Angles")
+getwd()
+```
+
+```{r read in files}
+setwd("C:/Users/kkmgo/Dropbox/BHI_Embryos_2018/Completed_Photo_Angles")
+nest19<- read.csv("nest19_angles_kmg.csv")
+nest20<- read.csv("nest20_angles_kmg.csv")
+nest21<- read.csv("nest21_angles_kmg.csv")
+nest22<- read.csv("nest22_angles_kmg.csv")
+nest23<- read.csv("nest23_angles_kmg.csv")
+nest25<- read.csv("nest25_angles_kmg.csv")
+nest26<- read.csv("nest26_angles_kmg.csv")
+nest27<- read.csv("nest27_angles_kmg.csv")
+nest28<- read.csv("nest28_angles_kmg.csv")
+nest32<- read.csv("nest32_angles_kmg.csv")
+nest34<- read.csv("nest34_angles_kmg.csv")
+nest36<- read.csv("nest36_angles_kmg.csv")
+nest39<- read.csv("nest39_angles_kmg.csv")
+nest40<- read.csv("nest40_angles_kmg.csv")
+nest41<- read.csv("nest41_angles_kmg.csv")
+nest46<- read.csv("nest46_angles_kmg_it.csv")
+nest47<- read.csv("nest47_angles_kmg_it.csv")
+nest48<- read.csv("nest48_angles_kmg_it.csv")
+nest49<- read.csv("nest49_angles_kmg_it.csv")
+nest51<- read.csv("nest51_angles_kmg_it.csv")
+nest52<- read.csv("nest52_angles_kmg_it.csv")
+```
+
+```{r}
+#library(dplyr)
+#nest21$Nest<-nest21$Nest[is.na(strsplit(x,5,6))]
+nest19$Nest<-rep("19")
+nest20$Nest<-rep("20")
+nest21$Nest<-rep("21")
+nest22$Nest<-rep("22")
+nest23$Nest<-rep("23")
+nest25$Nest<-rep("25")
+nest26$Nest<-rep("26")
+nest27$Nest<-rep("27")
+nest28$Nest<-rep("28")
+nest32$Nest<-rep("32")
+nest34$Nest<-rep("34")
+nest36$Nest<-rep("36")
+nest39$Nest<-rep("39")
+nest40$Nest<-rep("40")
+nest41$Nest<-rep("41")
+nest46$Nest<-rep("46")
+nest47$Nest<-rep("47")
+nest48$Nest<-rep("48")
+nest49$Nest<-rep("49")
+nest51$Nest<-rep("51")
+nest52$Nest<-rep("52")
+names(nest47)<- c("X","Area","Mean","Min","Max","Angle","Egg.Number","Direction","Notes","Nest")
+names(nest51)<- c("X","Area","Mean","Min","Max","Angle","Egg.Number","Direction","Notes","Nest")
+names(nest52)<- c("X","Area","Mean","Min","Max","Angle","Egg.Number","Direction","Notes","Nest")
+```
+
+
+
+```{r drop function}
+library(plyr)
+dfs<-list(nest19,nest20,nest21,nest22,nest23,nest25,nest26,nest27,nest28,nest32,nest34,nest36,nest39,nest40,nest41,nest46,nest47,nest48,nest49,nest51,nest52)
+
+
+drops<-c("X","Area","Mean","Min","Max")
+
+
+DropFunction<- function(x) {
+  x<-x[ , !(names(x) %in% drops)]
+  return(x)
+}
+
+dfs = ldply(dfs,DropFunction)
+
+dfs<-as.data.frame(dfs)
+```
+
+
+```{r correct for direction}
+library(dplyr)
+dfs<-dfs %>% mutate(CorrectedAngle = ifelse(Direction == 2,Angle - 90,ifelse(Direction==3,Angle-180, ifelse(Direction==4,Angle-270,Angle))))
+
+```
+
+```{r}
+dfs<-dfs %>% mutate(CorrectedAngle = ifelse(CorrectedAngle< 0,360+CorrectedAngle,CorrectedAngle))
+library(circular)
+dfs<-dfs %>% mutate(CorrectedAngle = as.circular(CorrectedAngle, units="degrees",template="geographics"))
+dfs<- dfs%>% mutate(Radians = (CorrectedAngle * pi) / (180))
+dfs <- dfs%>% mutate(Radians = as.circular(Radians,units="radians"))
+dfs <- dfs %>% filter((Notes != "dimpled")& (Notes != "small dimple")& (Notes != "dimpled, delete") & (Notes != "possibly dimpled")& (Notes != "possiby dimpled") & (Notes != "possible dimple"))
+dfs <- dfs %>% filter((Notes != "delete") & (Notes != "possibly delete") & (Notes != "duplicate body"))
+count(dfs$Nest==19)
+T = table(dfs$Nest)
+T
+eggcounts<-as.data.frame(T)
+names(eggcounts)<- c("nest","freq")
+```
+
+```{r}
+library(circular)
+library(dplyr)
+
+dfs<-na.omit(dfs)
+class(dfs$CorrectedAngle)
+#nest19<-filter(dfs,Nest==19)
+nest19.mean<-mean.circular(subset(dfs,Nest==19)$CorrectedAngle,template="geographics")
+nest20.mean<-mean.circular(subset(dfs,Nest==20)$CorrectedAngle)
+nest21.mean<-mean.circular(subset(dfs,Nest==21)$CorrectedAngle)
+nest22.mean<-mean.circular(subset(dfs,Nest==22)$CorrectedAngle)
+nest23.mean<-mean.circular(subset(dfs,Nest==23)$CorrectedAngle)
+nest25.mean<-mean.circular(subset(dfs,Nest==25)$CorrectedAngle)
+nest26.mean<-mean.circular(subset(dfs,Nest==26)$CorrectedAngle)
+nest27.mean<-mean.circular(subset(dfs,Nest==27)$CorrectedAngle)
+nest28.mean<-mean.circular(subset(dfs,Nest==28)$CorrectedAngle)
+nest32.mean<-mean.circular(subset(dfs,Nest==32)$CorrectedAngle)
+nest34.mean<-mean.circular(subset(dfs,Nest==34)$CorrectedAngle)
+nest36.mean<-mean.circular(subset(dfs,Nest==36)$CorrectedAngle)
+nest39.mean<-mean.circular(subset(dfs,Nest==39)$CorrectedAngle)
+nest40.mean<-mean.circular(subset(dfs,Nest==40)$CorrectedAngle)
+nest41.mean<-mean.circular(subset(dfs,Nest==41)$CorrectedAngle)
+nest46.mean<-mean.circular(subset(dfs,Nest==46)$CorrectedAngle)
+nest47.mean<-mean.circular(subset(dfs,Nest==47)$CorrectedAngle)
+nest48.mean<-mean.circular(subset(dfs,Nest==48)$CorrectedAngle)
+nest49.mean<-mean.circular(subset(dfs,Nest==49)$CorrectedAngle)
+nest51.mean<-mean.circular(subset(dfs,Nest==51)$CorrectedAngle)
+nest52.mean<-mean.circular(subset(dfs,Nest==52)$CorrectedAngle)
+
+nestmeans<-c(nest19.mean,nest20.mean,nest21.mean,nest22.mean,nest23.mean,nest25.mean,nest26.mean,nest27.mean,nest28.mean,nest32.mean,nest34.mean,nest36.mean,nest39.mean,nest40.mean,nest41.mean,nest46.mean,nest47.mean,nest48.mean,nest49.mean,nest51.mean,nest52.mean)
+nestmeans<-as.data.frame(nestmeans)
+
+dfs<-dfs %>% mutate(DoubledAngle = CorrectedAngle*2)
+nestmeans<- nestmeans %>% mutate(DoubledAngle = x*2)
+
+nestmeans<- nestmeans %>% mutate(Radians = (x * 3.14) / (180))
+names(nestmeans)<- c("meanangle","doubledangle","radians")
+nestmeans <- nestmeans %>% mutate(correctedangle = ifelse(meanangle< 0,360+meanangle,meanangle))
+
+class(nestmeans$meanangle)
+class(nestmeans$radians)
+overallmean<- mean.circular(dfs$CorrectedAngle)
+print(overallmean)
+
+plot.circular(nestmeans$meanangle,template = "geographics",pch= 16,title("Embryo Orientation BHI"))
+arrows.circular(overallmean)
+rayleigh.test(nestmeans$meanangle)
+
+
+
+rayleigh.test(nestmeans$meanangle)
+rayleigh.test(subset(dfs,Nest==19)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==19)$CorrectedAngle,template="geographics",pch= 16,title("Nest 19"))
+arrows.circular(nest19.mean)
+circ.summary(subset(dfs,Nest==19)$CorrectedAngle)
+rao.spacing(subset(dfs,Nest==19)$CorrectedAngle)
+rvonmises(subset(dfs,Nest==19)$CorrectedAngle)
+
+rayleigh.test(subset(dfs,Nest==20)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==20)$CorrectedAngle,template="geographics",pch=16,title("Nest 20"))
+arrows.circular(nest20.mean)
+rao.spacing(subset(dfs,Nest==20)$CorrectedAngle)
+
+rayleigh.test(subset(dfs,Nest==21)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==21)$CorrectedAngle,template="geographics",pch=16,title("Nest 21"))
+arrows.circular(nest21.mean)
+
+
+rayleigh.test(subset(dfs,Nest==22)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==22)$CorrectedAngle,template="geographics",pch=16,title("Nest 22"))
+arrows.circular(nest22.mean)
+
+rayleigh.test(subset(dfs,Nest==23)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==23)$CorrectedAngle,template="geographics",pch=16,title("Nest 23"))
+arrows.circular(nest23.mean)
+
+rayleigh.test(subset(dfs,Nest==25)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==25)$CorrectedAngle,template="geographics",pch=16,title("Nest 25"))
+arrows.circular(nest25.mean)
+
+rayleigh.test(subset(dfs,Nest==26)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==26)$CorrectedAngle,template="geographics",pch=16,title("Nest 26"))
+arrows.circular(nest26.mean)
+
+rayleigh.test(subset(dfs,Nest==27)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==27)$CorrectedAngle,template="geographics",pch=16,title("Nest 27"))
+arrows.circular(nest27.mean)
+
+rayleigh.test(subset(dfs,Nest==28)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==28)$CorrectedAngle,template="geographics",pch=16,title("Nest 28"))
+arrows.circular(nest28.mean)
+#NONE
+
+rayleigh.test(subset(dfs,Nest==32)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==32)$CorrectedAngle,template="geographics",pch=16,title("Nest 32"))
+arrows.circular(nest32.mean)
+
+rayleigh.test(subset(dfs,Nest==34)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==34)$CorrectedAngle,template="geographics",pch=16,title("Nest 34"))
+arrows.circular(nest34.mean)
+
+
+rayleigh.test(subset(dfs,Nest==36)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==36)$CorrectedAngle,template="geographics",pch=16,title("Nest 36"))
+arrows.circular(nest36.mean)
+
+rayleigh.test(subset(dfs,Nest==39)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==39)$CorrectedAngle,template="geographics",pch=16,title("Nest 39"))
+arrows.circular(nest39.mean)
+
+rayleigh.test(subset(dfs,Nest==40)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==40)$CorrectedAngle,template="geographics",pch=16,title("Nest 40"))
+arrows.circular(nest40.mean)
+
+rayleigh.test(subset(dfs,Nest==41)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==41)$CorrectedAngle,template="geographics",pch=16,title("Nest 41"))
+arrows.circular(nest41.mean)
+
+rayleigh.test(subset(dfs,Nest==46)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==46)$CorrectedAngle,template="geographics",pch=16,title("Nest 46"))
+arrows.circular(nest46.mean)
+
+rayleigh.test(subset(dfs,Nest==47)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==47)$CorrectedAngle,template="geographics",pch=16,title("Nest 47"))
+arrows.circular(nest47.mean)
+
+rayleigh.test(subset(dfs,Nest==48)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==48)$CorrectedAngle,template="geographics",pch=16,title("Nest 48"))
+arrows.circular(nest48.mean)
+
+rayleigh.test(subset(dfs,Nest==49)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==49)$CorrectedAngle,template="geographics",pch=16,title("Nest 49"))
+arrows.circular(nest49.mean)
+
+rayleigh.test(subset(dfs,Nest==51)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==51)$CorrectedAngle,template="geographics",pch=16,title("Nest 51"))
+arrows.circular(nest51.mean)
+
+rayleigh.test(subset(dfs,Nest==52)$CorrectedAngle)
+plot.circular(subset(dfs,Nest==52)$CorrectedAngle,template="geographics",pch=16,title("Nest 52"))
+arrows.circular(nest52.mean)
+
+
+
+
+```
+
+```{r}
+northnests<- dfs %>% filter((Nest==19) | (Nest==25) | (Nest==47) | (Nest==51)|(Nest==20)|(Nest==46))
+northnests.means<-as.data.frame(c(nest19.mean,nest25.mean,nest47.mean,nest51.mean,nest20.mean,nest46.mean))
+northnest.meanangle<-mean.circular(northnests$CorrectedAngle)
+rayleigh.test(northnests$CorrectedAngle)
+plot.circular(northnests$CorrectedAngle,template="geographics",pch=16)
+arrows.circular(mean.circular(northnests$CorrectedAngle))
+plot.circular(northnests.means,template="geographics",pch=16,col="red")
+rayleigh.test(northnests$DoubledAngle)
+
+
+#eastnests<-dfs %>% filter((Nest==20)|(Nest==46)|(Nest==49))
+#rayleigh.test(eastnests$CorrectedAngle)
+
+#southnests<- dfs %>% filter((Nest==27)|(Nest==32)|(Nest==41)|(Nest==40)|(Nest==48))
+#southnests.meanangle<-mean.circular(southnests$CorrectedAngle)
+#rayleigh.test(southnests$CorrectedAngle)
+#plot.circular(southnests$CorrectedAngle,template = "geographics",pch=16)
+#arrows.circular(southnests.meanangle)
+#rayleigh.test(southnests$DoubledAngle)
+
+westnests<- dfs %>% filter((Nest==22)|(Nest==23)|(Nest==26)|(Nest==34)|(Nest==36)|(Nest==39)|(Nest==27)|(Nest==32)|(Nest==41)|(Nest==40)|(Nest==48))
+westnests.meanangle<-mean.circular(westnests$CorrectedAngle)
+westnests.means<-as.data.frame(c(nest22.mean,nest23.mean,nest26.mean,nest34.mean,nest36.mean,nest39.mean,nest27.mean,nest32.mean,nest41.mean,nest40.mean,nest48.mean))
+rayleigh.test(westnests$CorrectedAngle)
+rayleigh.test(westnests$DoubledAngle)
+plot.circular(westnests$CorrectedAngle,template = "geographics",pch=16)
+arrows.circular(westnests.meanangle)
+plot.circular(westnests.means,template = "geographics",pch=16,col="blue")
+plot.circular(northnests.means,template="geographics",pch=16,col="red")
+arrows.circular(westnests.meanangle)
+arrows.circular(northnest.meanangle)
+
+dfs_alt <- dfs %>% filter((Nest != 49) & (Nest != 21) & (Nest != 52))
+dfs_alt <- dfs %>% mutate(Radians = as.circular(Radians, units= "radians"))
+
+rayleigh.test(dfs_alt$CorrectedAngle)
+rayleigh.test(dfs_alt$DoubledAngle)
+rayleigh.test(dfs_alt$Radians)
+library(CircMLE)
+circ_mle(dfs_alt$CorrectedAngle)
+circ_mle(dfs_alt$Radians)
+mean.angle<-mean.circular(dfs_alt$CorrectedAngle)
+
+plot.circular(dfs_alt$CorrectedAngle,template = "geographics",stack = TRUE,bins=360,sep=0.02,pch=1)
+arrows.circular(mean.angle)
+arrows.circular(northnest.meanangle,col="red")
+arrows.circular(westnests.meanangle,col="blue")
+
+
+plot.circular(westnests.means,col="blue")
+points.circular(northnests.means,col="red")
+arrows.circular(northnest.meanangle,col="red")
+arrows.circular(westnests.meanangle,col="blue")
+
+circ_mle(northnests$CorrectedAngle)
+circ_mle(westnests$CorrectedAngle)
+
+nestmeans_alt<-c(nest19.mean,nest20.mean,nest22.mean,nest23.mean,nest25.mean,nest26.mean,nest27.mean,nest28.mean,nest32.mean,nest34.mean,nest36.mean,nest39.mean,nest40.mean,nest41.mean,nest46.mean,nest47.mean,nest48.mean,nest51.mean)
+nestmeans_alt<-as.data.frame(nestmeans_alt)
+
+circ_mle(nestmeans_alt)
+rayleigh.test(nestmeans_alt)
+rao.spacing.test(nestmeans_alt)
+
+```
+
+
+```{r}
+library(circular)
+library(dplyr)
+
+rayleigh.test(nestmeans$doubledangle)
+rayleigh.test(subset(dfs,Nest==19)$DoubledAngle) #sig
+rayleigh.test(subset(dfs,Nest==20)$DoubledAngle) 
+plot.circular(subset(dfs,Nest==20)$DoubledAngle,template = "geographics")
+rayleigh.test(subset(dfs,Nest==21)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==22)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==23)$DoubledAngle) #sig
+rayleigh.test(subset(dfs,Nest==25)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==26)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==27)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==28)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==32)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==34)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==36)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==39)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==40)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==41)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==46)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==47)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==48)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==49)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==51)$DoubledAngle)
+rayleigh.test(subset(dfs,Nest==52)$DoubledAngle)
+
+```
+
+```{r}
+library(CircMLE)
+circ_mle(nestmeans$meanangle)
+circ_mle(subset(dfs,Nest==19)$CorrectedAngle)
+circ_mle(subset(dfs,Nest==20)$CorrectedAngle)
+circ_mle(subset(dfs,Nest==21)$CorrectedAngle)
+circ_mle(subset(dfs,Nest==22)$CorrectedAngle)
+circ_mle(subset(dfs,Nest==23)$CorrectedAngle)
+circ_mle(subset(dfs,Nest==25)$CorrectedAngle)
+circ_mle(dfs$CorrectedAngle)
+plot_circMLE(subset(dfs,Nest==19)$CorrectedAngle)
+
+```
+
+
+```{r separate E and S beach nests}
+library(dplyr)
+library(circular)
+means.east<-as.data.frame(c(nest19.mean,nest22.mean,nest23.mean,nest26.mean,nest28.mean,nest34.mean,nest36.mean,nest40.mean,nest46.mean,nest47.mean))
+means.south<-as.data.frame(c(nest20.mean,nest25.mean,nest27.mean,nest32.mean,nest39.mean,nest41.mean,nest48.mean,nest51.mean))
+#as.circular(means.east,type="angles",unit="degrees")
+#as.circular(means.south,type="angles",unit="degrees")
+rayleigh.test(means.east)
+rayleigh.test(means.south)
+
+eastbeachnests<- dfs_alt %>% filter((Nest==19)|(Nest==47)|(Nest==40)|(Nest==22)|(Nest==23)|(Nest==26)|(Nest==34)|(Nest==36))
+
+southbeachnests<- dfs_alt %>% filter((Nest==25)|(Nest==51)|(Nest==20)|(Nest==46)|(Nest==27)|(Nest==32)|(Nest==41)|(Nest==48)|(Nest==39))
+
+rayleigh.test(eastbeachnests$CorrectedAngle)
+rayleigh.test(southbeachnests$CorrectedAngle)
+
+plot.circular(means.east,col="blue")
+points.circular(means.south,col="red")
+watson.two.test(eastbeachnests$CorrectedAngle,southbeachnests$CorrectedAngle)
+
+#write.csv(dfs,file="dfs.csv")
+```
+
+
+```{r plots of nests}
+library(circular)
+rose.diag(nestmeans,template="geographics", title("Embryo Orientation BHI"))
+rose.diag(dfs.east,template = "geographics",title("Embryo Orientation East Beach"))
+rose.diag(dfs.south,template="geographics", title("Embryo Orientation South Beach"))
+rao.spacing.test(subset(dfs,Nest==19)$CorrectedAngle)
+rao.spacing.test(subset(dfs,Nest==20)$CorrectedAngle)
+mean.circular(dfs$CorrectedAngle)
+mean.circular(means.east)
+library(dplyr)
+#nestmeans <- nestmeans %>% mutate(CorrectedMean = ifelse(x<0,x+180,x))
+#mean.circular(nestmeans$CorrectedMean)
+mean.circular(means.east)
+mean.circular(means.south)
+plot.circular(means.east, template="geographics", pch=16, title("Embryo Orientation East Beach"))
+plot.circular(means.south, template="geographics", pch=16, title("Embryo Orientation South Beach"))
+rho.circular(nestmeans)
+rho.circular(subset(dfs,Nest==19)$CorrectedAngle)
+```
+
+
+```{r}
+nestmeans<- nestmeans %>% mutate(BimodalMean = x*2)
+rayleigh.test(nestmeans$BimodalMean)
+plot.circular(nestmeans$BimodalMean, template="geographics")
+library(CircStats)
+circ.disp(nestmeans$x)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
