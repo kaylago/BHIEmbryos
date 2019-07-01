@@ -1,0 +1,194 @@
+---
+title: "BHI Embryos 2019"
+author: "KG"
+date: "June 27, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+```
+
+
+```{r}
+setwd("C:/Users/kkmgo/Dropbox/EmbryoOrientation/EmbryoOrientation_BHI_2019/Angle_Data/")
+
+temp = list.files(pattern="*.csv")
+nest7 <- lapply(temp, read.csv, header=T)
+
+eggdirections <- read.csv("C:/Users/kkmgo/Dropbox/EmbryoOrientation/EmbryoOrientation_BHI_2019/Angle_Data/EggDirections/EggDirections.csv",header=T)
+
+library(plyr)
+drops<-c("Area","Mean","Min","Max")
+
+
+DropFunction<- function(x) {
+  x<-x[ , !(names(x) %in% drops)]
+  return(x)
+}
+
+nest7 = ldply(nest7,DropFunction)
+
+nest7$nest.id<-rep("7-kmg1")
+
+nest7[is.na(nest7)] <- " "
+
+names(nest7) <-  c("egg.id","angle","theta","nest.id")
+
+nest7<- merge(nest7,eggdirections,by=c("egg.id","nest.id"))
+
+detach(package:plyr)
+library(dplyr)
+nest7<-nest7 %>% mutate(angle = ifelse(direction == "B",angle - 90,ifelse(direction=="C",angle-180, ifelse(direction=="D",angle-270,angle)))) %>% mutate(angle = ifelse(angle< 0,360+angle,angle))
+
+detach(package:dplyr)
+library(tidyr)
+nest7 <- nest7 %>% spread(theta,angle)
+
+names(nest7) <-  c("egg.id","nest.id","direction","beach","labacclim","rotated48","rotated96")
+
+
+
+```
+
+```{r correct for direction}
+#detach(package:plyr)
+library(dplyr)
+#nest7<-nest7 %>% mutate(beachangle = ifelse(direction == "B",beach - 90,ifelse(direction=="C",beach-180, ifelse(direction=="D",beach-270,beach))))
+
+#nest7<-nest7 %>% mutate(labacclimangle = ifelse(direction == "B",labacclim - 90,ifelse(direction=="C",labacclim-180, ifelse(direction=="D",labacclim-270,labacclim))))
+
+#nest7<-nest7 %>% mutate(rotated48angle = ifelse(direction == "B",rotated48 - 90,ifelse(direction=="C",rotated48-180, ifelse(direction=="D",rotated48-270,rotated48))))
+
+#nest7<-nest7 %>% mutate(beachangle = ifelse(beachangle< 0,360+beachangle,beachangle))
+
+#nest7<-nest7 %>% mutate(labacclimangle = ifelse(labacclimangle< 0,360+labacclimangle,labacclimangle))
+
+nest7 <- nest7 %>% mutate(doubled_labacclim=labacclim*2)
+
+library(circular)
+
+rayleigh.test(nest7$beach)
+mean.circular(nest7$beach)
+plot.circular(nest7$beach,template="geographics",pch= 16,title("Nest 7 Beach Theta"))
+
+
+rayleigh.test(nest7$labacclim)
+mean.circular(nest7$labacclim)
+plot.circular(nest7$labacclim,template="geographics",pch= 16,title("Nest 7 Lab Acclim Theta"))
+
+rayleigh.test(nest7$doubled_labacclim)
+mean.circular(nest7$labacclim)
+
+rayleigh.test(nest7$rotated48)
+mean.circular(nest7$rotated48)
+plot.circular(nest7$rotated48,template="geographics",pch= 16,title("Nest 7 Rotated Theta 48 Hours"))
+
+#nest7 <- nest7 %>% mutate(doubled_rotated96=rotated96*2)
+#rayleigh.test(nest7$doubled_rotated96)
+
+rayleigh.test(nest7$rotated96)
+mean.circular(nest7$rotated96)
+plot.circular(nest7$rotated96,template="geographics",pch= 16,title("Nest 7 Rotated Theta 96 Hours"))
+
+nest7 <- nest7 %>% mutate(difference=rotated96-labacclim)
+
+nest7 <- nest7 %>% mutate(acclim_mvmnt=labacclim-beach)
+
+nest7_filtered <- nest7 %>% filter(egg.id!=14 & egg.id!=10 &egg.id!=11 &egg.id!=19)
+plot.circular(nest7_filtered$beach,template="geographics",pch= 16,title("Nest 7 Beach Theta"))
+plot.circular(nest7_filtered$labacclim,template="geographics",pch= 16,title("Nest 7 Lab Acclim Theta"))
+plot.circular(nest7_filtered$rotated48,template="geographics",pch= 16,title("Nest 7 Rotated Theta 48 Hours"))
+plot.circular(nest7_filtered$rotated96,template="geographics",pch= 16,title("Nest 7 Rotated Theta 96 Hours"))
+rayleigh.test(nest7_filtered$doubled_labacclim)
+rayleigh.test(nest7_filtered$beach)
+rayleigh.test(nest7_filtered$rotated48)
+rayleigh.test(nest7_filtered$rotated96)
+watson.two.test(nest7_filtered$labacclim,nest7_filtered$rotated96)
+
+```
+
+```{r}
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
